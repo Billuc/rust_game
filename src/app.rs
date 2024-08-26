@@ -1,5 +1,9 @@
-pub struct App {
+use std::{rc::Rc, sync::Arc};
 
+use crate::Scene;
+
+pub struct App {
+    current_scene: Vec<Box<dyn Scene>>,
 }
 
 impl Default for App {
@@ -21,6 +25,8 @@ impl eframe::App for App {
         } = self;
 
         egui::CentralPanel::default().show(ctx, |ui| {
+            let scene = self.current_scene.as_ref();
+            scene.show(ui);
             ui.label("coucou")
         });
     }
