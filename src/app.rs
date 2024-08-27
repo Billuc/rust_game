@@ -1,14 +1,16 @@
-use std::{rc::Rc, sync::Arc};
 
-use crate::Scene;
+use egui::{Color32, Frame};
+
+use crate::{scenes::MainScene, Scene};
 
 pub struct App {
-    current_scene: Vec<Box<dyn Scene>>,
+    current_scene: Box<dyn Scene>,
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
+            current_scene: Box::new(MainScene::new()),
         }
     }
 }
@@ -20,14 +22,18 @@ impl App {
 }
 
 impl eframe::App for App {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let Self {
-        } = self;
+    fn update(self: &mut Self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui_extras::install_image_loaders(ctx);
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            let scene = self.current_scene.as_ref();
-            scene.show(ui);
-            ui.label("coucou")
-        });
+        let response = egui::CentralPanel::default()
+            .frame(Frame::default().fill(Color32::WHITE))
+            .show(ctx, |ui| self.current_scene.show(ui));
+
+        match response.inner.inner {
+            crate::SceneEvent::ChangeScene(scene) => {
+                self.current_scene = scene;
+            }
+            crate::SceneEvent::None() => (),
+        }
     }
 }
